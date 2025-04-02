@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+
+  Future<void> registerUser(BuildContext context) async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      print('Email and password cannot be empty');
+      return;
+    }
+    if (passwordController.text.length < 6) {
+      print('Password should be at least 6 characters');
+      return;
+    }
+    if (passwordController.text != confirmPasswordController.text) {
+      print('Passwords do not match');
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      print('Registration successful');
+      // Navigate to the Login Page
+      Navigator.pushReplacementNamed(context, '/login');
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,15 +111,7 @@ class RegisterPage extends StatelessWidget {
               SizedBox(height: 16),
               // Register Button
               ElevatedButton(
-                onPressed: () {
-                  // Handle registration logic
-                  if (passwordController.text == confirmPasswordController.text) {
-                    print('Email: ${emailController.text}');
-                    print('Password: ${passwordController.text}');
-                  } else {
-                    print('Passwords do not match');
-                  }
-                },
+                onPressed: () => registerUser(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),

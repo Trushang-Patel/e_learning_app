@@ -1,15 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'courses_page.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  Future<void> loginUser(BuildContext context) async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      print('Email and password cannot be empty');
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      print('Login successful');
+      // Navigate to the Courses Page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => CoursesPage()),
+      );
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return; // User canceled the sign-in
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      print('Google Sign-In successful');
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+    Future<void> signInWithGitHub() async {
+    try {
+      final githubProvider = GithubAuthProvider();
+      await FirebaseAuth.instance.signInWithProvider(githubProvider);
+      print('GitHub Sign-In successful');
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blueGrey[50], // Light background color
       appBar: AppBar(
-        title: Text('E Learning App'),
+        title: Text('Login'),
         backgroundColor: Colors.blueAccent, // AppBar color
       ),
       body: SingleChildScrollView(
@@ -70,11 +123,7 @@ class LoginPage extends StatelessWidget {
               SizedBox(height: 16),
               // Login Button
               ElevatedButton(
-                onPressed: () {
-                  // Handle login logic
-                  print('Email: ${emailController.text}');
-                  print('Password: ${passwordController.text}');
-                },
+                onPressed: () => loginUser(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
@@ -100,8 +149,7 @@ class LoginPage extends StatelessWidget {
                   // Google Login Button
                   ElevatedButton.icon(
                     onPressed: () {
-                      // Handle Google login logic
-                      print('Google Login');
+                      signInWithGoogle();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -125,7 +173,7 @@ class LoginPage extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () {
                       // Handle GitHub login logic
-                      print('GitHub Login');
+                      signInWithGitHub();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
