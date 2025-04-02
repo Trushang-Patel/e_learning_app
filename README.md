@@ -82,4 +82,3 @@ e_learning_app/
 ├── ios/                         # iOS-specific files
 ├── [pubspec.yaml](http://_vscodecontentref_/1)                 # Project dependencies
 └── [README.md](http://_vscodecontentref_/2)                    # Project documentation
-
