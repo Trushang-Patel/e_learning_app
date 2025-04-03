@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'courses_page.dart';
 
@@ -42,6 +43,7 @@ class LoginPage extends StatelessWidget {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
       print('Google Sign-In successful');
+       Get.offAll(()=> CoursesPage()); // Navigate to CoursesPage after successful login
     } catch (e) {
       print('Error: $e');
     }
