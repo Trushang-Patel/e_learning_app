@@ -30,14 +30,23 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final userData = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      if (userData.exists) {
-        setState(() {
-          _usernameController.text = userData['username'] ?? '';
-          _dobController.text = userData['dob'] ?? '';
-          _educationLevelController.text = userData['educationLevel'] ?? '';
-          _profileImageUrl = userData['profileImageUrl'];
-        });
+      try {
+        final userData = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userData.exists) {
+          setState(() {
+            _usernameController.text = userData['username'] ?? '';
+            _dobController.text = userData['dob'] ?? '';
+            _educationLevelController.text = userData['educationLevel'] ?? '';
+            _profileImageUrl = userData.data()?.containsKey('profileImageUrl') == true
+                ? userData['profileImageUrl']
+                : ''; // Handle missing field
+          });
+        }
+      } catch (e) {
+        print('Error loading user data: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load user data: $e')),
+        );
       }
     }
   }
@@ -60,20 +69,31 @@ class _ProfilePageState extends State<ProfilePage> {
     if (user != null && _profileImage != null) {
       final storageRef = FirebaseStorage.instance.ref().child('profile_images/${user.uid}.jpg');
 
-      // Convert image to JPEG format
+      // Read the image bytes
       final imageBytes = await _profileImage!.readAsBytes();
-      final decodedImage = img.decodeImage(imageBytes);
-      final jpgImage = img.encodeJpg(decodedImage!);
 
+      // Decode the image
+      final decodedImage = img.decodeImage(imageBytes);
+
+      // Resize the image to a maximum width/height of 300 pixels
+      final resizedImage = img.copyResize(decodedImage!, width: 300, height: 300);
+
+      // Compress the image by reducing the quality (e.g., 70%)
+      final jpgImage = img.encodeJpg(resizedImage, quality: 70);
+
+      // Upload the resized and compressed image to Firebase Storage
       await storageRef.putData(
         Uint8List.fromList(jpgImage),
         SettableMetadata(contentType: 'image/jpeg'),
       );
 
+      // Get the download URL of the uploaded image
       final downloadUrl = await storageRef.getDownloadURL();
       setState(() {
         _profileImageUrl = downloadUrl;
       });
+
+      // Save the download URL to Firestore
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'profileImageUrl': _profileImageUrl,
       }, SetOptions(merge: true));
@@ -111,15 +131,22 @@ class _ProfilePageState extends State<ProfilePage> {
               GestureDetector(
                 onTap: _pickImage,
                 child: CircleAvatar(
-                  radius: 50,
+                  radius: 150, // Adjust size as needed
                   backgroundImage: _profileImage != null
                       ? FileImage(_profileImage!)
-                      : (_profileImageUrl != null
+                      : (_profileImageUrl != null && _profileImageUrl!.isNotEmpty
                           ? NetworkImage(_profileImageUrl!)
-                          : AssetImage('assets/profile_placeholder.png')) as ImageProvider,
+                          : AssetImage('assets/images/profile_placeholder.png')) as ImageProvider,
                   child: Align(
                     alignment: Alignment.bottomRight,
-                    child: Icon(Icons.camera_alt, color: Colors.white),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black54,
+                      ),
+                      padding: EdgeInsets.all(6),
+                      child: Icon(Icons.camera_alt, color: Colors.white, size: 24),
+                    ),
                   ),
                 ),
               ),
