@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img; // Import for image processing
+import 'package:shared_preferences/shared_preferences.dart'; // Import for SharedPreferences
+import 'package:e_learning_app/screens/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -116,6 +118,21 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> logoutUser(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+
+    // Clear login timestamp
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('loginTimestamp');
+
+    // Navigate to the Login Page
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+      (route) => false, // Remove all previous routes
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,8 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ElevatedButton(
                 onPressed: () async {
                   try {
-                    await FirebaseAuth.instance.signOut(); // Sign out the user
-                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false); // Navigate to login page
+                    await logoutUser(context); // Use the new logoutUser method
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

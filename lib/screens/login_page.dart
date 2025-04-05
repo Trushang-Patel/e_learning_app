@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'courses_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -19,10 +20,16 @@ class LoginPage extends StatelessWidget {
         password: passwordController.text,
       );
       print('Login successful');
-      // Navigate to the Courses Page
-      Navigator.pushReplacement(
+
+      // Store login timestamp
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+
+      // Navigate to the Courses Page and remove all previous routes
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => CoursesPage()),
+        (route) => false, // Remove all previous routes
       );
     } catch (e) {
       print('Error: $e');
