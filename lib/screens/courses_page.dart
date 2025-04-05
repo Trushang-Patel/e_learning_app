@@ -33,6 +33,12 @@ class CoursesPage extends StatelessWidget {
               }
             },
           ),
+          IconButton(
+            icon: Icon(Icons.person),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile'); // Navigate to ProfilePage
+            },
+          ),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
