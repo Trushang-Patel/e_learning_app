@@ -23,7 +23,13 @@ class CoursesPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => AdminPage()),
                 );
               } else {
-                print('Access denied: Only admin can access this page');
+                // Show a SnackBar for non-admin users
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Access denied: Only admins can access this page.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
           ),
@@ -36,26 +42,56 @@ class CoursesPage extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No courses available.'));
+            return Center(
+              child: Text(
+                'No courses available.',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
           }
           final courses = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: courses.length,
-            itemBuilder: (context, index) {
-              final course = courses[index];
-              return ListTile(
-                title: Text(course['title']),
-                subtitle: Text(course['description']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CourseDetailPage(course: course),
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView.builder(
+              itemCount: courses.length,
+              itemBuilder: (context, index) {
+                final course = courses[index];
+                return Card(
+                  elevation: 4,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(16),
+                    title: Text(
+                      course['title'],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent,
+                      ),
                     ),
-                  );
-                },
-              );
-            },
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        course['description'],
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      ),
+                    ),
+                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.blueAccent),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CourseDetailPage(course: course),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
