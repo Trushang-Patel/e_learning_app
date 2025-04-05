@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:e_learning_app/screens/admin_page.dart'; // Import AdminPage
+import 'course_detail_page.dart'; // Import the CourseDetailPage
 
 class CoursesPage extends StatelessWidget {
   @override
@@ -42,34 +43,20 @@ class CoursesPage extends StatelessWidget {
             itemCount: courses.length,
             itemBuilder: (context, index) {
               final course = courses[index];
-              return CourseCard(
-                title: course['title'],
-                description: course['description'],
+              return ListTile(
+                title: Text(course['title']),
+                subtitle: Text(course['description']),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CourseDetailPage(course: course),
+                    ),
+                  );
+                },
               );
             },
           );
-        },
-      ),
-    );
-  }
-}
-
-class CourseCard extends StatelessWidget {
-  final String title;
-  final String description;
-
-  CourseCard({required this.title, required this.description});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(description),
-        trailing: Icon(Icons.arrow_forward),
-        onTap: () {
-          print('Selected course: $title');
         },
       ),
     );

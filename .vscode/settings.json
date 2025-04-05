@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/HP/Desktop/e_learning_app/linux"
+    "cmake.sourceDirectory": "C:/Users/HP/Desktop/e_learning_app/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
