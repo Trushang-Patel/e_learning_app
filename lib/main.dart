@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart'; // Make sure to import Get
 import 'firebase_options.dart';
 import 'screens/welcome_page.dart';
 import 'screens/login_page.dart';
@@ -20,16 +21,17 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp( // Changed from MaterialApp to GetMaterialApp
       debugShowCheckedModeBanner: false,
       title: 'E-Learning App',
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/',
-      routes: {
-        '/': (context) => LoginPage(),
-        '/profile': (context) => ProfilePage(),
-        '/courses': (context) => CoursesPage(),
-      },
+      getPages: [ // Using Get's route system
+        GetPage(name: '/', page: () => LoginPage()),
+        GetPage(name: '/profile', page: () => ProfilePage()),
+        GetPage(name: '/courses', page: () => CoursesPage()),
+        GetPage(name: '/register', page: () => RegisterPage()),
+      ],
     );
   }
 }
