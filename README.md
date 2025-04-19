@@ -38,58 +38,6 @@ A comprehensive E-Learning application built with Flutter and Firebase. This app
 
 ---
 
-## Screens
-
-Here are the app's screenshots showcasing various features and screens:
-
-### **User Interface Screens**
-- **Login Page**
-  ![Login Page](assets/App_images/LOGIN_PAGE.jpg)
-  
-- **Register Page**
-  ![Register Page](assets/App_images/REGISTER_PAGE.jpg)
-
-- **Submit Quiz Page**
-  ![Submit Quiz Page](assets/App_images/SUBMIT_QUIZ.jpg)
-
-### **Course Screens**
-- **Existing Course (Admin View)**
-  ![Existing Course (Admin View)](assets/App_images/EXISTING_COURSE.jpg)
-
-- **Video Playback in Landscape Mode**
-  ![Video Landscape Mode](assets/App_images/LANDSCAPE_MODE.jpg)
-
-- **Video Playback in Portrait Mode**
-  ![Video Portrait Mode](assets/App_images/POTRATIMODE.jpg)
-
-- **Quiz Section**
-  ![Quiz Section](assets/App_images/QUIZ_SECTION.jpg)
-
-### **Additional Screens**
-- **Download Certificate**
-  ![Download Certificate](assets/App_images/DOWNLOAD_CERTIFICATE.jpg)
-
-- **Exit App Confirmation**
-  ![Exit App Confirmation](assets/App_images/EXIT_APP.jpg)
-
-### **Newly Added Screens**
-- **Admin Course Creation**
-  ![Admin Course Creation](assets/App_images/ADMIN_COURSE_CREATION.jpg)
-
-- **List of All Courses**
-  ![List of All Courses](assets/App_images/ALL_COURSES_LIST.jpg)
-
-- **Profile Section**
-  ![Profile Section](assets/App_images/PROFILE_SECTION.jpg)
-
-- **Single Course View (User Side)**
-  ![Single Course View (User Side)](assets/App_images/SINGLE_COURSE_VIEW.jpg)
-
-- **Update User Profile Section**
-  ![Update User Profile Section](assets/App_images/UPDATE_PROFILE_SECTION.jpg)
-
----
-
 ## Technical Implementation
 
 - **Frontend**: Flutter (Dart)
@@ -176,3 +124,56 @@ flutter run
 - Flutter for the amazing cross-platform framework
 - Firebase for backend services
 - All open-source packages that made this project possible
+
+## Screens
+
+Here are the app's screenshots showcasing various features and screens:
+
+### **User Interface Screens**
+- **Login Page**
+  ![Login Page](assets/App_images/LOGIN_PAGE.jpg)
+  
+- **Register Page**
+  ![Register Page](assets/App_images/REGISTER_PAGE.jpg)
+
+- **Submit Quiz Page**
+  ![Submit Quiz Page](assets/App_images/SUBMIT_QUIZ.jpg)
+
+### **Course Screens**
+- **Existing Course (Admin View)**
+  ![Existing Course (Admin View)](assets/App_images/EXISTING_COURSE.jpg)
+
+- **Video Playback in Landscape Mode**
+  ![Video Landscape Mode](assets/App_images/LANDSCAPE_MODE.jpg)
+
+- **Video Playback in Portrait Mode**
+  ![Video Portrait Mode](assets/App_images/POTRATIMODE.jpg)
+
+- **Quiz Section**
+  ![Quiz Section](assets/App_images/QUIZ_SECTION.jpg)
+
+### **Additional Screens**
+- **Download Certificate**
+  ![Download Certificate](assets/App_images/DOWNLOAD_CERTIFICATE.jpg)
+
+- **Exit App Confirmation**
+  ![Exit App Confirmation](assets/App_images/EXIT_APP.jpg)
+
+### **Newly Added Screens**
+- **Admin Course Creation**
+  ![Admin Course Creation](assets/App_images/ADMIN_COURSE_CREATION.jpg)
+
+- **List of All Courses**
+  ![List of All Courses](assets/App_images/ALL_COURSES_LIST.jpg)
+
+- **Profile Section**
+  ![Profile Section](assets/App_images/PROFILE_SECTION.jpg)
+
+- **Single Course View (User Side)**
+  ![Single Course View (User Side)](assets/App_images/SINGLE_COURSE_VIEW.jpg)
+
+- **Update User Profile Section**
+  ![Update User Profile Section](assets/App_images/UPDATE_PROFILE_SECTION.jpg)
+
+---
+
