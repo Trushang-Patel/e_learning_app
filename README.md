@@ -40,14 +40,54 @@ A comprehensive E-Learning application built with Flutter and Firebase. This app
 
 ## Screens
 
-- **Welcome Page**: Introduction to the app
-- **Login Page**: User authentication
-- **Register Page**: New user registration
-- **Profile Page**: Manage personal information
-- **Course List Page**: Browse available courses
-- **Course Detail Page**: View course content and take quizzes
-- **Certificate Page**: Download earned certificates
-- **Admin Panel**: Manage courses and users (admin only)
+Here are the app's screenshots showcasing various features and screens:
+
+### **User Interface Screens**
+- **Login Page**
+  ![Login Page](assets\App_images\LOGIN_PAGE.jpg)
+  
+- **Register Page**
+  ![Register Page](assets\App_images\REGISTER_PAGE.jpg)
+
+- **Submit Quiz Page**
+  ![Submit Quiz Page](assets\App_images\SUBMIT_QUIZ.jpg)
+
+### **Course Screens**
+- **Existing Course (Admin View)**
+  ![Existing Course (Admin View)](assets/App_images/EXISTING_COURSE.jpg)
+
+- **Video Playback in Landscape Mode**
+  ![Video Landscape Mode](assets\App_images\LANDSCAPE_MODE.jpg)
+
+- **Video Playback in Portrait Mode**
+  ![Video Portrait Mode](assets\App_images\POTRATIMODE.jpg)
+
+- **Quiz Section**
+  ![Quiz Section](\assets\App_images\QUIZ_SECTION.jpg)
+
+### **Additional Screens**
+- **Download Certificate**
+  ![Download Certificate](assets\App_images\DOWNLOAD_CERTIFICATE.jpg)
+
+- **Exit App Confirmation**
+  ![Exit App Confirmation](\assets\App_images\EXIT_APP.jpg)
+
+### **More Screens**
+(Add descriptions and replace the placeholder URLs for the following images.)
+- **Image 1**
+  ![Image 1](https://example.com/image1.png)
+
+- **Image 2**
+  ![Image 2](https://example.com/image2.png)
+
+- **Image 3**
+  ![Image 3](https://example.com/image3.png)
+
+- **Image 4**
+  ![Image 4](https://example.com/image4.png)
+
+- **Image 5**
+  ![Image 5](https://example.com/image5.png)
 
 ---
 
@@ -117,15 +157,6 @@ flutter run
 
 ---
 
-## Screenshots
-
-![Login Screen](https://example.com/login-screen.png)
-![Course Listing](https://example.com/course-listing.png)
-![Course Detail](https://example.com/course-detail.png)
-![Profile Page](https://example.com/profile-page.png)
-
----
-
 ## Future Enhancements
 
 - Offline mode for course content
@@ -137,14 +168,8 @@ flutter run
 
 ---
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## Contributors
-- [Your Name](https://github.com/yourprofile)
+- [Your Name](https://github.com/Trushang-Patel)
 
 ---
 
