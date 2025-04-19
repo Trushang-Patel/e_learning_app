@@ -2,7 +2,7 @@
 
 A comprehensive E-Learning application built with Flutter and Firebase. This app enables users to register, log in, access courses with video content, take quizzes, and earn certificates upon successful completion.
 
-![E-Learning App Banner](https://example.com/app-banner.png)
+![E-Learning App Banner](assets/App_images/app-banner.png)
 
 ## Features
 
