@@ -44,33 +44,33 @@ Here are the app's screenshots showcasing various features and screens:
 
 ### **User Interface Screens**
 - **Login Page**
-  ![Login Page](assets\App_images\LOGIN_PAGE.jpg)
+  ![Login Page](assets/App_images/LOGIN_PAGE.jpg)
   
 - **Register Page**
-  ![Register Page](assets\App_images\REGISTER_PAGE.jpg)
+  ![Register Page](assets/App_images/REGISTER_PAGE.jpg)
 
 - **Submit Quiz Page**
-  ![Submit Quiz Page](assets\App_images\SUBMIT_QUIZ.jpg)
+  ![Submit Quiz Page](assets/App_images/SUBMIT_QUIZ.jpg)
 
 ### **Course Screens**
 - **Existing Course (Admin View)**
   ![Existing Course (Admin View)](assets/App_images/EXISTING_COURSE.jpg)
 
 - **Video Playback in Landscape Mode**
-  ![Video Landscape Mode](assets\App_images\LANDSCAPE_MODE.jpg)
+  ![Video Landscape Mode](assets/App_images/LANDSCAPE_MODE.jpg)
 
 - **Video Playback in Portrait Mode**
-  ![Video Portrait Mode](assets\App_images\POTRATIMODE.jpg)
+  ![Video Portrait Mode](assets/App_images/POTRATIMODE.jpg)
 
 - **Quiz Section**
-  ![Quiz Section](\assets\App_images\QUIZ_SECTION.jpg)
+  ![Quiz Section](/assets/App_images/QUIZ_SECTION.jpg)
 
 ### **Additional Screens**
 - **Download Certificate**
-  ![Download Certificate](assets\App_images\DOWNLOAD_CERTIFICATE.jpg)
+  ![Download Certificate](assets/App_images/DOWNLOAD_CERTIFICATE.jpg)
 
 - **Exit App Confirmation**
-  ![Exit App Confirmation](\assets\App_images\EXIT_APP.jpg)
+  ![Exit App Confirmation](/assets/App_images/EXIT_APP.jpg)
 
 ### **More Screens**
 (Add descriptions and replace the placeholder URLs for the following images.)
