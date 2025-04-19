@@ -63,31 +63,30 @@ Here are the app's screenshots showcasing various features and screens:
   ![Video Portrait Mode](assets/App_images/POTRATIMODE.jpg)
 
 - **Quiz Section**
-  ![Quiz Section](/assets/App_images/QUIZ_SECTION.jpg)
+  ![Quiz Section](assets/App_images/QUIZ_SECTION.jpg)
 
 ### **Additional Screens**
 - **Download Certificate**
   ![Download Certificate](assets/App_images/DOWNLOAD_CERTIFICATE.jpg)
 
 - **Exit App Confirmation**
-  ![Exit App Confirmation](/assets/App_images/EXIT_APP.jpg)
+  ![Exit App Confirmation](assets/App_images/EXIT_APP.jpg)
 
-### **More Screens**
-(Add descriptions and replace the placeholder URLs for the following images.)
-- **Image 1**
-  ![Image 1](https://example.com/image1.png)
+### **Newly Added Screens**
+- **Admin Course Creation**
+  ![Admin Course Creation](assets/App_images/ADMIN_COURSE_CREATION.jpg)
 
-- **Image 2**
-  ![Image 2](https://example.com/image2.png)
+- **List of All Courses**
+  ![List of All Courses](assets/App_images/ALL_COURSES_LIST.jpg)
 
-- **Image 3**
-  ![Image 3](https://example.com/image3.png)
+- **Profile Section**
+  ![Profile Section](assets/App_images/PROFILE_SECTION.jpg)
 
-- **Image 4**
-  ![Image 4](https://example.com/image4.png)
+- **Single Course View (User Side)**
+  ![Single Course View (User Side)](assets/App_images/SINGLE_COURSE_VIEW.jpg)
 
-- **Image 5**
-  ![Image 5](https://example.com/image5.png)
+- **Update User Profile Section**
+  ![Update User Profile Section](assets/App_images/UPDATE_PROFILE_SECTION.jpg)
 
 ---
 
@@ -169,7 +168,7 @@ flutter run
 ---
 
 ## Contributors
-- [Your Name](https://github.com/Trushang-Patel)
+- [Trushang Patel](https://github.com/Trushang-Patel)
 
 ---
 
