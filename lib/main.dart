@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get/get.dart'; // Make sure to import Get
+import 'package:get/get.dart'; 
 import 'firebase_options.dart';
 import 'screens/welcome_page.dart';
 import 'screens/login_page.dart';

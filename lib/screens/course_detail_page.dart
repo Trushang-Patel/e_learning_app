@@ -3,8 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'generateCertificate.dart';
 import 'dart:io';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final QueryDocumentSnapshot course;
@@ -125,7 +128,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             Text('You scored $score/100 and earned a certificate!'),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: generateCertificate,
+              onPressed: downloadCertificate,
               child: Text('Download Certificate'),
             ),
           ],
@@ -160,69 +163,29 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     );
   }
 
-  Future<void> generateCertificate() async {
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) => pw.Center(
-          child: pw.Column(
-            mainAxisAlignment: pw.MainAxisAlignment.center,
-            children: [
-              pw.Text(
-                'Certificate of Achievement',
-                style: pw.TextStyle(
-                  fontSize: 24,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 20),
-              pw.Text(
-                'This is to certify that',
-                style: pw.TextStyle(fontSize: 18),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text(
-                'John Doe', // Replace with the user's name
-                style: pw.TextStyle(
-                  fontSize: 22,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text(
-                'has successfully completed the course',
-                style: pw.TextStyle(fontSize: 18),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text(
-                widget.course['title'],
-                style: pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 20),
-              pw.Text(
-                'with a score of $score/100.',
-                style: pw.TextStyle(fontSize: 18),
-              ),
-            ],
-          ),
-        ),
-      ),
+  Future<void> downloadCertificate() async {
+  // Get the current user's name from Firebase Auth
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  
+  // Get user's display name or email (if name not available)
+  String userName = user?.displayName ?? user?.email ?? 'Student';
+  
+  try {
+    // Call the dedicated certificate generator function
+    await generateCertificate(
+      context: context,
+      userName: userName,
+      courseTitle: widget.course['title'],
+      score: score,
     );
-
-    // Save the PDF to a file
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/certificate.pdf');
-    await file.writeAsBytes(await pdf.save());
-
-    // Open the file
+  } catch (e) {
+    print('Error generating certificate: $e');
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Certificate downloaded to ${file.path}')),
+      SnackBar(content: Text('Failed to generate certificate: $e')),
     );
   }
+}
 
   Widget _buildVideoPlayer() {
     if (_youtubeController != null && _isPlayerReady) {
