@@ -274,9 +274,9 @@ class _CoursesPageState extends State<CoursesPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Course image or placeholder
+          // Course image or placeholder - KEEP THIS FIXED HEIGHT
           Container(
-            height: 120,
+            height: 100, // Reduced from 120 to give more space to content
             decoration: BoxDecoration(
               color: Colors.blueAccent.withOpacity(0.8),
               borderRadius: BorderRadius.only(
@@ -288,7 +288,6 @@ class _CoursesPageState extends State<CoursesPage> {
                       image: NetworkImage(data['imageUrl']),
                       fit: BoxFit.cover,
                       onError: (exception, stackTrace) {
-                        // Handle image loading errors
                         return;
                       },
                     )
@@ -305,51 +304,58 @@ class _CoursesPageState extends State<CoursesPage> {
                 : null,
           ),
           
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  data.containsKey('title') ? data['title'] : 'Untitled Course',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  data.containsKey('description') ? data['description'] : 'No description available',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[700],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 8),
-                // Only show duration, remove video count
-                Row(
-                  children: [
-                    Icon(Icons.access_time, 
-                         size: 16, 
-                         color: Colors.blueAccent),
-                    SizedBox(width: 4),
-                    Text(
-                      data.containsKey('duration') && data['duration'] != null 
-                          ? data['duration'] 
-                          : 'Duration not specified',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blueAccent,
-                      ),
+          // This is the content area - make it flexible with Expanded
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0), // Reduced padding from 12 to 8
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data.containsKey('title') ? data['title'] : 'Untitled Course',
+                    style: TextStyle(
+                      fontSize: 14, // Reduced from 16
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
                     ),
-                  ],
-                ),
-              ],
+                    maxLines: 1, // Reduced from 2
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4), // Reduced from 8
+                  Text(
+                    data.containsKey('description') ? data['description'] : 'No description available',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Spacer(), // Push duration to bottom
+                  // Duration row
+                  Row(
+                    children: [
+                      Icon(Icons.access_time, 
+                           size: 14, // Reduced from 16
+                           color: Colors.blueAccent),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          data.containsKey('duration') && data['duration'] != null 
+                              ? data['duration'] 
+                              : 'Duration not specified',
+                          style: TextStyle(
+                            fontSize: 12, // Reduced from 14
+                            color: Colors.blueAccent,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
