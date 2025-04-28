@@ -300,6 +300,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   @override
   Widget build(BuildContext context) {
     final quiz = List<Map<String, dynamic>>.from(widget.course['quiz']);
+    // Get data safely
+    final Map<String, dynamic> data = widget.course.data() as Map<String, dynamic>;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.course['title']),
@@ -313,7 +316,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             children: [
               // Course Title
               Text(
-                widget.course['title'],
+                data.containsKey('title') ? data['title'] : 'Untitled Course',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -321,6 +324,35 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 ),
               ),
               SizedBox(height: 10),
+
+              // Course Duration only (removed Video count)
+              Row(
+                children: [
+                  // Duration
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.access_time, size: 16, color: Colors.blueAccent),
+                        SizedBox(width: 4),
+                        Text(
+                          widget.course['duration'] ?? 'Duration not specified',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blueAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Video count section removed
+                ],
+              ),
+              SizedBox(height: 15),
 
               // Course Description
               Text(
@@ -332,6 +364,41 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               ),
               SizedBox(height: 20),
 
+              // Course details card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Course Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      _buildDetailRow(Icons.access_time, 'Duration', data.containsKey('duration') ? data['duration'] ?? 'Not specified' : 'Not specified'),
+                      Divider(height: 20),
+                      _buildDetailRow(Icons.quiz, 'Quiz', '${quiz.length} questions'),
+                      Divider(height: 20),
+                      // Only show level if it exists in the document
+                      if (data.containsKey('level'))
+                        _buildDetailRow(Icons.star, 'Level', data['level']),
+                      if (data.containsKey('level'))
+                        Divider(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              // Rest of your code remains the same
               // Course Video Section
               Text(
                 'Course Video:',
@@ -345,7 +412,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               _buildVideoPlayer(),
               SizedBox(height: 20),
 
-              // Quiz Section
+              // Quiz section and other components remain unchanged
               Text(
                 'Quiz:',
                 style: TextStyle(
@@ -418,6 +485,34 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String title, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.blueAccent),
+            SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[700],
+          ),
+        ),
+      ],
     );
   }
 }
