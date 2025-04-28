@@ -8,6 +8,7 @@ import 'generateCertificate.dart';
 import 'dart:io';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final QueryDocumentSnapshot course;
@@ -26,11 +27,18 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   YoutubePlayerController? _youtubeController;
   bool _isPlayerReady = false;
   String? _errorMessage;
+  
+  // New variables for quiz attempt tracking
+  int attemptCount = 0;
+  bool hasPassed = false;
+  bool quizSubmitted = false;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _initializeYoutubePlayer();
+    _loadQuizAttemptData();
   }
 
   void _initializeYoutubePlayer() {
@@ -98,7 +106,107 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     super.dispose();
   }
 
-  void calculateScore() {
+  // Load quiz attempt data from SharedPreferences
+  Future<void> _loadQuizAttemptData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String courseId = widget.course.id;
+    final User? user = FirebaseAuth.instance.currentUser;
+    
+    if (user != null) {
+      final String userId = user.uid;
+      final String attemptKey = 'quiz_attempts_${userId}_${courseId}';
+      final String passedKey = 'quiz_passed_${userId}_${courseId}';
+      
+      setState(() {
+        attemptCount = prefs.getInt(attemptKey) ?? 0;
+        hasPassed = prefs.getBool(passedKey) ?? false;
+        isLoading = false;
+      });
+      
+      // Also save this data to Firestore for tracking on courses page
+      await _updateQuizAttemptInFirestore(userId, courseId);
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+  
+  // Update quiz attempt data in Firestore
+  Future<void> _updateQuizAttemptInFirestore(String userId, String courseId) async {
+    try {
+      final userCoursesRef = FirebaseFirestore.instance
+          .collection('userCourses')
+          .doc('${userId}_${courseId}');
+          
+      final docSnapshot = await userCoursesRef.get();
+      
+      if (docSnapshot.exists) {
+        await userCoursesRef.update({
+          'attemptCount': attemptCount,
+          'hasPassed': hasPassed,
+        });
+      } else {
+        await userCoursesRef.set({
+          'userId': userId,
+          'courseId': courseId,
+          'attemptCount': attemptCount,
+          'hasPassed': hasPassed,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error updating quiz attempt in Firestore: $e');
+    }
+  }
+  
+  // Save quiz attempt data to SharedPreferences and Firestore
+  Future<void> _saveQuizAttemptData(bool passed) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String courseId = widget.course.id;
+    final User? user = FirebaseAuth.instance.currentUser;
+    
+    if (user != null) {
+      final String userId = user.uid;
+      final String attemptKey = 'quiz_attempts_${userId}_${courseId}';
+      final String passedKey = 'quiz_passed_${userId}_${courseId}';
+      
+      setState(() {
+        attemptCount++;
+        if (passed) {
+          hasPassed = true;
+        }
+      });
+      
+      await prefs.setInt(attemptKey, attemptCount);
+      await prefs.setBool(passedKey, hasPassed);
+      
+      // Update Firestore
+      await _updateQuizAttemptInFirestore(userId, courseId);
+    }
+  }
+
+  void calculateScore() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You must be logged in to submit a quiz')),
+      );
+      return;
+    }
+    
+    // Check if user has already passed
+    if (hasPassed) {
+      showAlreadyPassedDialog();
+      return;
+    }
+    
+    // Check if user has reached max attempts
+    if (attemptCount >= 3) {
+      showMaxAttemptsDialog();
+      return;
+    }
+    
     final quiz = List<Map<String, dynamic>>.from(widget.course['quiz']);
     score = 0;
 
@@ -108,31 +216,29 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       }
     }
 
+    // Mark the quiz as submitted
+    setState(() {
+      quizSubmitted = true;
+    });
+    
     // Check if the user passed
-    if (score >= 75) {
+    final bool passed = score >= 75;
+    await _saveQuizAttemptData(passed);
+    
+    if (passed) {
       showCertificateDialog();
     } else {
       showRetryDialog();
     }
   }
 
-  // Add the missing dialog methods
-  void showCertificateDialog() {
+  // Add new dialog methods
+  void showMaxAttemptsDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Congratulations!'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('You scored $score/100 and earned a certificate!'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: downloadCertificate,
-              child: Text('Download Certificate'),
-            ),
-          ],
-        ),
+        title: Text('Maximum Attempts Reached'),
+        content: Text('You have used all 3 quiz attempts for this course.'),
         actions: [
           TextButton(
             onPressed: () {
@@ -145,18 +251,22 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     );
   }
 
-  void showRetryDialog() {
+  void showAlreadyPassedDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Try Again'),
-        content: Text('You scored $score/100. You need at least 75 to pass.'),
+        title: Text('Quiz Already Passed'),
+        content: Text('You have already passed this quiz with a score of at least 75%. You cannot retake it.'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Retry'),
+            child: Text('OK'),
+          ),
+          TextButton(
+            onPressed: downloadCertificate,
+            child: Text('Download Certificate'),
           ),
         ],
       ),
@@ -263,7 +373,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   @override
   Widget build(BuildContext context) {
     final quiz = List<Map<String, dynamic>>.from(widget.course['quiz']);
-    // Get data safely
     final Map<String, dynamic> data = widget.course.data() as Map<String, dynamic>;
     
     return Scaffold(
@@ -271,13 +380,15 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         title: Text(widget.course['title']),
         backgroundColor: Colors.blueAccent,
       ),
-      body: SingleChildScrollView(
+      body: isLoading ? 
+        Center(child: CircularProgressIndicator()) :
+        SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Course Title
+              // Course Title (unchanged)
               Text(
                 data.containsKey('title') ? data['title'] : 'Untitled Course',
                 style: TextStyle(
@@ -288,6 +399,64 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               ),
               SizedBox(height: 10),
 
+              // Add quiz status banner
+              if (hasPassed) 
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Quiz passed! ',
+                                style: TextStyle(color: Colors.green[800]),
+                              ),
+                              TextSpan(
+                                text: 'Score: $score/100',
+                                style: TextStyle(
+                                  color: Colors.green[800], 
+                                  fontWeight: FontWeight.bold
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+              if (!hasPassed && attemptCount > 0)
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Quiz attempts: ${attemptCount}/3',
+                          style: TextStyle(color: Colors.orange[800]),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              SizedBox(height: 10),
+              
               // Course Duration only (removed Video count)
               Row(
                 children: [
@@ -430,20 +599,39 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               // Submit Button
               Center(
                 child: ElevatedButton(
-                  onPressed: calculateScore,
+                  onPressed: (hasPassed || attemptCount >= 3) ? null : calculateScore,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
+                    disabledBackgroundColor: Colors.grey,
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: Text(
-                    'Submit Quiz',
+                    hasPassed ? 'Quiz Passed' : 
+                    attemptCount >= 3 ? 'Max Attempts Reached' : 'Submit Quiz',
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
               ),
+              
+              // Certificate download button if passed
+              if (hasPassed)
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0),
+                  child: Center(
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.download),
+                      label: Text('Download Certificate'),
+                      onPressed: downloadCertificate,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -476,6 +664,106 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           ),
         ),
       ],
+    );
+  }
+
+  void showCertificateDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Congratulations!'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.emoji_events,
+              color: Colors.amber,
+              size: 50,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'You passed the quiz with a score of $score/100.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'You can now download your course completion certificate.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              downloadCertificate();
+            },
+            child: Text('Download Certificate'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showRetryDialog() {
+    // Calculate remaining attempts
+    int remainingAttempts = 3 - attemptCount;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Quiz Result'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.orange,
+              size: 50,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'You scored $score/100.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'You need at least 75/100 to pass this quiz.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Remaining attempts: $remainingAttempts',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: remainingAttempts == 1 ? Colors.red : Colors.orange,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Reset quiz answers (optional)
+              setState(() {
+                userAnswers.clear();
+                quizSubmitted = false;
+              });
+            },
+            child: Text('Try Again'),
+          ),
+        ],
+      ),
     );
   }
 }
