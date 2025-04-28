@@ -5,22 +5,39 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'courses_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
+  String? _errorMessage;
+  bool _isLoading = false;
 
   Future<void> loginUser(BuildContext context) async {
+    // Clear previous error messages
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      print('Email and password cannot be empty');
+      setState(() {
+        _errorMessage = 'Email and password cannot be empty';
+        _isLoading = false;
+      });
       return;
     }
+    
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
-      print('Login successful');
-
+      
       // Store login timestamp
       final prefs = await SharedPreferences.getInstance();
       prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
@@ -31,48 +48,102 @@ class LoginPage extends StatelessWidget {
         MaterialPageRoute(builder: (context) => CoursesPage()),
         (route) => false, // Remove all previous routes
       );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _isLoading = false;
+        // Provide user-friendly error messages
+        switch (e.code) {
+          case 'user-not-found':
+            _errorMessage = 'No user found with this email';
+            break;
+          case 'wrong-password':
+            _errorMessage = 'Wrong password provided';
+            break;
+          case 'invalid-email':
+            _errorMessage = 'Invalid email format';
+            break;
+          case 'user-disabled':
+            _errorMessage = 'This account has been disabled';
+            break;
+          default:
+            _errorMessage = 'Login failed: ${e.message}';
+            break;
+        }
+      });
     } catch (e) {
-      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'An error occurred: $e';
+      });
     }
   }
 
   Future<void> signInWithGoogle() async {
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+    
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // User canceled the sign-in
+      if (googleUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return; // User canceled the sign-in
+      }
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
-      print('Google Sign-In successful');
-       Get.offAll(()=> CoursesPage()); // Navigate to CoursesPage after successful login
+      
+      // Store login timestamp
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+      
+      Get.offAll(() => CoursesPage());
     } catch (e) {
-      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Google Sign-In failed: $e';
+      });
     }
   }
 
-    Future<void> signInWithGitHub() async {
+  Future<void> signInWithGitHub() async {
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+    
     try {
       final githubProvider = GithubAuthProvider();
       await FirebaseAuth.instance.signInWithProvider(githubProvider);
-      print('GitHub Sign-In successful');
+      
+      // Store login timestamp
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+      
+      Get.offAll(() => CoursesPage());
     } catch (e) {
-      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'GitHub Sign-In failed: $e';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[50], // Light background color
+      backgroundColor: Colors.blueGrey[50],
       appBar: AppBar(
         title: Text('Login'),
-        backgroundColor: Colors.blueAccent, // AppBar color
+        backgroundColor: Colors.blueAccent,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -84,7 +155,7 @@ class LoginPage extends StatelessWidget {
               // App Logo
               CircleAvatar(
                 radius: 50,
-                backgroundImage: AssetImage('assets/images/logo.jpg'), // Add your logo here
+                backgroundImage: AssetImage('assets/images/logo.jpg'),
               ),
               SizedBox(height: 20),
               Text(
@@ -104,6 +175,35 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 30),
+              
+              // Display error message if any
+              if (_errorMessage != null)
+                Container(
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red.shade200)
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, size: 16, color: Colors.red[300]),
+                        onPressed: () => setState(() => _errorMessage = null),
+                      )
+                    ],
+                  ),
+                ),
+              
               // Email TextField
               TextField(
                 controller: emailController,
@@ -113,53 +213,98 @@ class LoginPage extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
+                onChanged: (_) {
+                  if (_errorMessage != null) {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }
+                },
               ),
               SizedBox(height: 16),
-              // Password TextField
+              
+              // Password TextField with visibility toggle
               TextField(
                 controller: passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   prefixIcon: Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+                  ),
                 ),
-                obscureText: true,
+                obscureText: !_isPasswordVisible,
+                onChanged: (_) {
+                  if (_errorMessage != null) {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }
+                },
               ),
               SizedBox(height: 16),
+              
               // Login Button
               ElevatedButton(
-                onPressed: () => loginUser(context),
+                onPressed: _isLoading ? null : () => loginUser(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  disabledBackgroundColor: Colors.blueAccent.withOpacity(0.6),
                 ),
-                child: Text(
-                  'Login',
-                  style: TextStyle(fontSize: 16),
-                ),
+                child: _isLoading 
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Login',
+                      style: TextStyle(fontSize: 16),
+                    ),
               ),
               SizedBox(height: 20),
+              
               Text(
                 'Or login with',
                 style: TextStyle(color: Colors.grey[700]),
               ),
               SizedBox(height: 10),
+              
               // Google and GitHub Login Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Google Login Button
                   ElevatedButton.icon(
-                    onPressed: () {
-                      signInWithGoogle();
-                    },
+                    onPressed: _isLoading ? null : signInWithGoogle,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -167,9 +312,10 @@ class LoginPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                         side: BorderSide(color: Colors.grey),
                       ),
+                      disabledBackgroundColor: Colors.white.withOpacity(0.7),
                     ),
                     icon: Image.asset(
-                      'assets/images/google_logo.png', // Add Google logo here
+                      'assets/images/google_logo.png',
                       height: 20,
                     ),
                     label: Text(
@@ -178,18 +324,17 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 10),
+                  
                   // GitHub Login Button
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // Handle GitHub login logic
-                      signInWithGitHub();
-                    },
+                    onPressed: _isLoading ? null : signInWithGitHub,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      disabledBackgroundColor: Colors.black.withOpacity(0.7),
                     ),
                     icon: Icon(
                       Icons.code,
@@ -203,14 +348,17 @@ class LoginPage extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 20),
+              
               // Register Navigation
               TextButton(
-                onPressed: () {
+                onPressed: _isLoading ? null : () {
                   Navigator.pushNamed(context, '/register');
                 },
                 child: Text(
                   'Don\'t have an account? Register',
-                  style: TextStyle(color: Colors.blueAccent),
+                  style: TextStyle(
+                    color: _isLoading ? Colors.grey : Colors.blueAccent,
+                  ),
                 ),
               ),
             ],
